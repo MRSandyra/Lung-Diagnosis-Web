@@ -6,7 +6,7 @@ A web-based system for diagnosing lung diseases from chest X-ray images and pati
 
 ## ✨ Features
 
-- **User authentication** — register, login, logout using Laravel Breeze/Sanctum style.
+- **User authentication** — register, login, logout via a custom `AuthController` (session-based); Laravel Breeze is not installed, and Sanctum is present in `composer.json` but unused by this flow.
 - **X-ray image upload** — JPG/PNG up to 5MB with validation and preview.
 - **Symptom selection** from a predefined list (batuk, sesak napas, nyeri dada, dll).
 - **Multimodal diagnosis** combining image + symptoms via a trained DenseNet-169 model.
@@ -107,12 +107,13 @@ Sesuaikan juga `APP_NAME`, `APP_URL`, dan variabel lainnya.
 php artisan migrate
 ```
 
-> **Catatan:** Migrasi bawaan hanya membuat tabel default Laravel. Anda perlu membuat migrasi tambahan untuk:
-> - `diagnoses` (user_id, diagnosis_date, dll)
-> - `diagnosis_labels` (diagnosis_id, label_name, label_score)
-> - `diagnosis_symptoms` (diagnosis_id, symptom_name)
+> **Catatan:** Migrasi bawaan hanya membuat tabel default Laravel, dan skema `users` bawaan tidak cocok dengan `User` model (model mengharapkan primary key `user_id` dan kolom `username`, bukan `id`/`name` default). Anda perlu menyesuaikan/membuat migrasi untuk:
+> - `users` — sesuaikan ke `user_id` (PK), `username`, `email`, `password`, `created_at`
+> - `diagnosis` (diagnosis_id, user_id, diagnosis_date, dll) — nama tabel tunggal, sesuai `App\Models\Diagnosis`
+> - `diagnosis_label` (label_id, diagnosis_id, label_name, label_cscore) — sesuai `App\Models\DiagnosisLabel`
+> - `diagnosis_symptom` (symptom_id, diagnosis_id, symptom_name) — sesuai `App\Models\DiagnosisSymptom`
 >
-> Jika belum ada, jalankan `php artisan make:migration create_diagnoses_table` dan definisikan skemanya.
+> Jika belum ada, jalankan `php artisan make:migration create_diagnosis_table` dan definisikan skemanya sesuai model di `app/Models/`.
 
 ### 6. Setup environment Python (Flask API)
 
